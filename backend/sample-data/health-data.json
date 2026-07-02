@@ -1,0 +1,18 @@
+[
+  { "deviceId": "ST001", "patientId": "P1001", "timestamp": "2026-07-01T06:00:00Z", "heartRate": 68, "spo2": 98, "temperature": 36.6, "steps": 0, "fallDetected": false },
+  { "deviceId": "ST001", "patientId": "P1001", "timestamp": "2026-07-01T07:00:00Z", "heartRate": 72, "spo2": 98, "temperature": 36.7, "steps": 850, "fallDetected": false },
+  { "deviceId": "ST001", "patientId": "P1001", "timestamp": "2026-07-01T08:00:00Z", "heartRate": 76, "spo2": 97, "temperature": 36.7, "steps": 1200, "fallDetected": false },
+  { "deviceId": "ST001", "patientId": "P1001", "timestamp": "2026-07-01T09:00:00Z", "heartRate": 132, "spo2": 96, "temperature": 36.9, "steps": 2100, "fallDetected": false },
+  { "deviceId": "ST001", "patientId": "P1001", "timestamp": "2026-07-01T10:00:00Z", "heartRate": 88, "spo2": 91, "temperature": 37.1, "steps": 900, "fallDetected": false },
+  { "deviceId": "ST001", "patientId": "P1001", "timestamp": "2026-07-01T11:00:00Z", "heartRate": 79, "spo2": 98, "temperature": 36.8, "steps": 400, "fallDetected": false },
+  { "deviceId": "ST002", "patientId": "P1002", "timestamp": "2026-07-01T06:30:00Z", "heartRate": 64, "spo2": 99, "temperature": 36.5, "steps": 0, "fallDetected": false },
+  { "deviceId": "ST002", "patientId": "P1002", "timestamp": "2026-07-01T07:30:00Z", "heartRate": 70, "spo2": 98, "temperature": 36.6, "steps": 600, "fallDetected": false },
+  { "deviceId": "ST002", "patientId": "P1002", "timestamp": "2026-07-01T08:30:00Z", "heartRate": 74, "spo2": 88, "temperature": 38.4, "steps": 300, "fallDetected": false },
+  { "deviceId": "ST002", "patientId": "P1002", "timestamp": "2026-07-01T09:30:00Z", "heartRate": 81, "spo2": 95, "temperature": 37.9, "steps": 450, "fallDetected": false },
+  { "deviceId": "ST002", "patientId": "P1002", "timestamp": "2026-07-01T10:30:00Z", "heartRate": 77, "spo2": 97, "temperature": 37.2, "steps": 700, "fallDetected": false },
+  { "deviceId": "ST003", "patientId": "P1003", "timestamp": "2026-07-01T07:00:00Z", "heartRate": 90, "spo2": 97, "temperature": 36.9, "steps": 1500, "fallDetected": false },
+  { "deviceId": "ST003", "patientId": "P1003", "timestamp": "2026-07-01T08:00:00Z", "heartRate": 95, "spo2": 96, "temperature": 37.0, "steps": 2000, "fallDetected": false },
+  { "deviceId": "ST003", "patientId": "P1003", "timestamp": "2026-07-01T09:00:00Z", "heartRate": 110, "spo2": 94, "temperature": 37.3, "steps": 3200, "fallDetected": false },
+  { "deviceId": "ST003", "patientId": "P1003", "timestamp": "2026-07-01T10:00:00Z", "heartRate": 105, "spo2": 90, "temperature": 37.6, "steps": 800, "fallDetected": true },
+  { "deviceId": "ST003", "patientId": "P1003", "timestamp": "2026-07-01T11:00:00Z", "heartRate": 85, "spo2": 96, "temperature": 37.0, "steps": 1100, "fallDetected": false }
+]

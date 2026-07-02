@@ -1,0 +1,5 @@
+[
+  { "patientId": "P1001", "name": "Aarav Sharma", "sex": "male", "dateOfBirth": "1958-03-12", "cardiacRisk": "High", "diabetesRisk": "Moderate" },
+  { "patientId": "P1002", "name": "Meera Nair", "sex": "female", "dateOfBirth": "1971-11-05", "cardiacRisk": "Moderate", "diabetesRisk": "High" },
+  { "patientId": "P1003", "name": "Rohan Verma", "sex": "male", "dateOfBirth": "1963-07-22", "cardiacRisk": "Low", "diabetesRisk": "Low" }
+]

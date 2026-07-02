@@ -1,0 +1,134 @@
+{
+  "info": {
+    "name": "StealthEra RPM API",
+    "description": "Remote Patient Monitoring backend: ingestion, patient APIs, genetics partner mock, merged profile.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000/api/v1" },
+    { "key": "deviceKey", "value": "st-device-key-local" },
+    { "key": "token", "value": "" },
+    { "key": "patientId", "value": "P1001" }
+  ],
+  "item": [
+    {
+      "name": "Auth - Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "  pm.collectionVariables.set('token', pm.response.json().token);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@stealthera.health\",\n  \"password\": \"StealthEra#2026\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Ingest - Health Data",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-API-Key", "value": "{{deviceKey}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/health-data", "host": ["{{baseUrl}}"], "path": ["health-data"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"deviceId\": \"ST001\",\n  \"patientId\": \"P1001\",\n  \"timestamp\": \"2026-07-01T10:30:00Z\",\n  \"heartRate\": 76,\n  \"spo2\": 98,\n  \"temperature\": 36.7,\n  \"steps\": 5400,\n  \"fallDetected\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "Ingest - Invalid (impossible vitals)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "X-API-Key", "value": "{{deviceKey}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/health-data", "host": ["{{baseUrl}}"], "path": ["health-data"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"deviceId\": \"ST001\",\n  \"patientId\": \"P1001\",\n  \"timestamp\": \"2026-07-01T10:35:00Z\",\n  \"heartRate\": 255,\n  \"spo2\": 12,\n  \"temperature\": 72\n}"
+        }
+      }
+    },
+    {
+      "name": "Patient - Latest",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{baseUrl}}/patients/{{patientId}}/latest",
+          "host": ["{{baseUrl}}"],
+          "path": ["patients", "{{patientId}}", "latest"]
+        }
+      }
+    },
+    {
+      "name": "Patient - History",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{baseUrl}}/patients/{{patientId}}/history?limit=50&order=desc",
+          "host": ["{{baseUrl}}"],
+          "path": ["patients", "{{patientId}}", "history"],
+          "query": [
+            { "key": "limit", "value": "50" },
+            { "key": "order", "value": "desc" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Patient - Summary",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{baseUrl}}/patients/{{patientId}}/summary",
+          "host": ["{{baseUrl}}"],
+          "path": ["patients", "{{patientId}}", "summary"]
+        }
+      }
+    },
+    {
+      "name": "Genetics - Partner Mock",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/genetics/{{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["genetics", "{{patientId}}"]
+        }
+      }
+    },
+    {
+      "name": "Patient Profile - Merged",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+        "url": {
+          "raw": "{{baseUrl}}/patient-profile/{{patientId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["patient-profile", "{{patientId}}"]
+        }
+      }
+    }
+  ]
+}

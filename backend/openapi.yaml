@@ -1,0 +1,426 @@
+openapi: 3.0.3
+info:
+  title: StealthEra Remote Patient Monitoring API
+  version: 1.0.0
+  description: >
+    Backend for the StealthEra RPM platform. Wearable devices push physiological
+    signals to the ingestion endpoint; clinicians read patient vitals, generated
+    alerts and a merged wearable + genetic patient profile.
+servers:
+  - url: http://localhost:4000/api/v1
+    description: Local development
+tags:
+  - name: Auth
+  - name: Ingestion
+  - name: Patients
+  - name: Genetics (Partner Mock)
+  - name: Patient Profile
+  - name: System
+paths:
+  /health:
+    get:
+      tags: [System]
+      summary: Service and database health
+      security: []
+      responses:
+        "200":
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+        "503":
+          description: Database unavailable
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate a clinician and receive a JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+            example:
+              email: admin@stealthera.health
+              password: "StealthEra#2026"
+      responses:
+        "200":
+          description: Authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "401":
+          description: Invalid credentials
+        "422":
+          description: Validation error
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Return the authenticated clinician
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user
+        "401":
+          description: Missing or invalid token
+  /health-data:
+    post:
+      tags: [Ingestion]
+      summary: Ingest a wearable physiological packet
+      description: >
+        Validates and stores one physiological packet. Duplicate packets
+        (same deviceId + timestamp) are detected and return 200 without
+        creating a new record. On a new record, alert rules are evaluated.
+      security:
+        - deviceApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HealthDataPayload"
+            example:
+              deviceId: ST001
+              patientId: P1001
+              timestamp: "2026-07-01T10:30:00Z"
+              heartRate: 76
+              spo2: 98
+              temperature: 36.7
+              steps: 5400
+              fallDetected: false
+      responses:
+        "201":
+          description: Packet stored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestionResponse"
+        "200":
+          description: Duplicate packet ignored
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IngestionResponse"
+        "401":
+          description: Missing or invalid device API key
+        "422":
+          description: Payload failed validation or physiological bounds
+  /patients:
+    get:
+      tags: [Patients]
+      summary: List monitored patients with their latest vitals and alert
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: pageSize
+          in: query
+          schema: { type: integer, default: 50, maximum: 500 }
+      responses:
+        "200":
+          description: Paginated patient list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/PatientListRow" }
+                  page: { type: integer }
+                  pageSize: { type: integer }
+                  total: { type: integer }
+                  totalPages: { type: integer }
+  /patients/{id}/latest:
+    get:
+      tags: [Patients]
+      summary: Latest vitals for a patient
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PatientId"
+      responses:
+        "200":
+          description: Latest vitals
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Vitals"
+        "404":
+          description: No records for patient
+  /patients/{id}/history:
+    get:
+      tags: [Patients]
+      summary: Time-ordered vitals history for a patient
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PatientId"
+        - name: from
+          in: query
+          schema: { type: string, format: date-time }
+        - name: to
+          in: query
+          schema: { type: string, format: date-time }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 200, maximum: 2000 }
+        - name: order
+          in: query
+          schema: { type: string, enum: [asc, desc], default: desc }
+      responses:
+        "200":
+          description: History page
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/History"
+        "404":
+          description: No records for patient
+  /patients/{id}/summary:
+    get:
+      tags: [Patients]
+      summary: Aggregated summary (latest vitals, averages, total steps, latest alert, recovery score)
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PatientId"
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Summary"
+        "404":
+          description: No records for patient
+  /genetics/{patientId}:
+    get:
+      tags: [Genetics (Partner Mock)]
+      summary: Mock partner genetics risk endpoint
+      description: Stand-in for an external partner platform. Consumed over HTTP by the patient-profile builder.
+      security: []
+      parameters:
+        - name: patientId
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Genetic risk profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Genetics"
+              example:
+                cardiacRisk: High
+                diabetesRisk: Moderate
+  /patient-profile/{id}:
+    get:
+      tags: [Patient Profile]
+      summary: Merged wearable + genetic patient profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PatientId"
+      responses:
+        "200":
+          description: Merged profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatientProfile"
+        "404":
+          description: No records for patient
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    deviceApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+  parameters:
+    PatientId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+      example: P1001
+  schemas:
+    Health:
+      type: object
+      properties:
+        status: { type: string, example: ok }
+        mongo: { type: string, example: up }
+        uptimeSeconds: { type: integer }
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    LoginResponse:
+      type: object
+      properties:
+        token: { type: string }
+        user:
+          type: object
+          properties:
+            id: { type: string }
+            email: { type: string }
+            name: { type: string }
+            role: { type: string }
+    HealthDataPayload:
+      type: object
+      required: [deviceId, patientId, timestamp]
+      properties:
+        deviceId: { type: string, example: ST001 }
+        patientId: { type: string, example: P1001 }
+        timestamp: { type: string, format: date-time }
+        heartRate: { type: number, minimum: 20, maximum: 240 }
+        spo2: { type: number, minimum: 50, maximum: 100 }
+        temperature: { type: number, minimum: 30, maximum: 45 }
+        steps: { type: integer, minimum: 0 }
+        fallDetected: { type: boolean, default: false }
+    IngestionResponse:
+      type: object
+      properties:
+        status: { type: string, enum: [stored, duplicate] }
+        data:
+          type: object
+          properties:
+            created: { type: boolean }
+            recordId: { type: string }
+            patientId: { type: string }
+            deviceId: { type: string }
+            timestamp: { type: string, format: date-time }
+            alerts:
+              type: array
+              items:
+                type: object
+                properties:
+                  type: { type: string }
+                  severity: { type: string }
+                  message: { type: string }
+    Vitals:
+      type: object
+      properties:
+        recordId: { type: string }
+        deviceId: { type: string }
+        patientId: { type: string }
+        timestamp: { type: string, format: date-time }
+        heartRate: { type: number, nullable: true }
+        spo2: { type: number, nullable: true }
+        temperature: { type: number, nullable: true }
+        steps: { type: integer, nullable: true }
+        fallDetected: { type: boolean }
+    PatientListRow:
+      type: object
+      properties:
+        patientId: { type: string }
+        name: { type: string }
+        sex: { type: string }
+        deviceIds:
+          type: array
+          items: { type: string }
+        latest:
+          allOf: [{ $ref: "#/components/schemas/Vitals" }]
+          nullable: true
+        latestAlert:
+          allOf: [{ $ref: "#/components/schemas/Alert" }]
+          nullable: true
+    History:
+      type: object
+      properties:
+        patientId: { type: string }
+        count: { type: integer }
+        total: { type: integer }
+        data:
+          type: array
+          items: { $ref: "#/components/schemas/Vitals" }
+    Alert:
+      type: object
+      properties:
+        id: { type: string }
+        patientId: { type: string }
+        deviceId: { type: string }
+        type: { type: string }
+        severity: { type: string, enum: [info, warning, critical] }
+        message: { type: string }
+        metric: { type: string, nullable: true }
+        value: { type: number, nullable: true }
+        threshold: { type: number, nullable: true }
+        timestamp: { type: string, format: date-time }
+    Summary:
+      type: object
+      properties:
+        patientId: { type: string }
+        latestVitals:
+          allOf: [{ $ref: "#/components/schemas/Vitals" }]
+          nullable: true
+        averages:
+          type: object
+          properties:
+            heartRate: { type: number, nullable: true }
+            spo2: { type: number, nullable: true }
+        totals:
+          type: object
+          properties:
+            steps: { type: integer }
+        sampleCount: { type: integer }
+        window:
+          type: object
+          properties:
+            firstAt: { type: string, format: date-time, nullable: true }
+            lastAt: { type: string, format: date-time, nullable: true }
+        latestAlert:
+          allOf: [{ $ref: "#/components/schemas/Alert" }]
+          nullable: true
+        recoveryScore:
+          $ref: "#/components/schemas/RecoveryScore"
+    RecoveryScore:
+      type: object
+      properties:
+        score: { type: integer }
+        band: { type: string, enum: [poor, fair, good, excellent] }
+        factors:
+          type: array
+          items: { type: string }
+    Genetics:
+      type: object
+      properties:
+        cardiacRisk: { type: string, enum: [Low, Moderate, High] }
+        diabetesRisk: { type: string, enum: [Low, Moderate, High] }
+    PatientProfile:
+      type: object
+      properties:
+        patientId: { type: string }
+        demographics:
+          type: object
+          nullable: true
+          properties:
+            name: { type: string }
+            sex: { type: string }
+            dateOfBirth: { type: string, format: date-time, nullable: true }
+        wearable:
+          $ref: "#/components/schemas/Summary"
+        genetics:
+          type: object
+          properties:
+            available: { type: boolean }
+            source: { type: string }
+            data:
+              allOf: [{ $ref: "#/components/schemas/Genetics" }]
+              nullable: true
+            note: { type: string }
+security:
+  - bearerAuth: []

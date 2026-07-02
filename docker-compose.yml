@@ -1,0 +1,39 @@
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    environment:
+      NODE_ENV: production
+      PORT: "4000"
+      MONGODB_URI: mongodb://mongo:27017
+      MONGODB_DB: stealthera_rpm
+      JWT_SECRET: change-me-in-production
+      AUTH_ENABLED: "true"
+      DEVICE_API_KEYS: st-device-key-local
+      GENETICS_API_BASE_URL: http://localhost:4000/api/v1
+      CORS_ORIGINS: "*"
+      SEED_ADMIN_EMAIL: admin@stealthera.health
+      SEED_ADMIN_PASSWORD: "StealthEra#2026"
+    ports:
+      - "4000:4000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+
+volumes:
+  mongo-data:

@@ -35,8 +35,6 @@ docker compose exec backend npm run seed
 
 ## Quick Start (Local)
 
-Requires Node 20+ and a running MongoDB.
-
 ```bash
 # backend
 cd backend
@@ -65,8 +63,6 @@ npm run dev         # http://localhost:5173
 | POST | `/api/v1/auth/login` | — | authentication |
 | GET | `/api/v1/patients` | Bearer | dashboard list |
 
-## Task 4 — Intelligence Layer (Alert Engine + Recovery Score)
-
 The **alert engine** runs on every newly-stored packet and evaluates independent rules,
 each producing a typed alert with a severity that escalates as the value gets further
 from the threshold:
@@ -86,23 +82,12 @@ deducts bounded penalties for heart rate outside the resting band, sub-optimal S
 temperature deviation, and recent critical alerts — then maps to a band
 (`poor`/`fair`/`good`/`excellent`).
 
-## Bonus Answers
 
-**Bonus 1 — duplicate packets.** `health_data` has a **unique index on
-`(deviceId, timestamp)`**. Ingestion inserts and catches the duplicate-key error; a
-repeat packet returns **`200 duplicate`** (not `201`) and creates no second row or
-alert. A device could also send a client-generated `eventId` for the same guarantee —
-the natural key is used here because `(deviceId, timestamp)` is already unique per reading.
+- `health_data` has a **unique index on `(deviceId, timestamp)`**. Ingestion inserts and catches the duplicate-key error; a repeat packet returns **`200 duplicate`** (not `201`) and creates no second row or alert. A device could also send a client-generated `eventId` for the same guarantee — the natural key is used here because `(deviceId, timestamp)` is already unique per reading.
 
-**Bonus 2 — impossible values (HR 255, SpO₂ 12 %, Temp 72 °C).** Validation is
-two-tier. **Hard physiological bounds** (HR 20–240, SpO₂ 50–100, Temp 30–45) reject
-impossible readings with **`422`** — they are sensor faults, not emergencies, and
-must never pollute averages or fire false alarms. Values that are *plausible but
-dangerous* (e.g. HR 165, SpO₂ 84) pass validation and raise **critical alerts**. The
-split lives in `config/vitals.ts` (bounds) vs `config/env.ts` (clinical thresholds).
+- Validation is two-tier. **Hard physiological bounds** (HR 20–240, SpO₂ 50–100, Temp 30–45) reject impossible readings with **`422`** — they are sensor faults, not emergencies, and must never pollute averages or fire false alarms. Values that are *plausible but dangerous* (e.g. HR 165, SpO₂ 84) pass validation and raise **critical alerts**. The split lives in `config/vitals.ts` (bounds) vs `config/env.ts` (clinical thresholds).
 
-**Bonus 3 — 100 → 100,000 devices (no API contract change).** The API is versioned
-and stateless, so it scales behind these evolutions without changing contracts:
+- The API is versioned and stateless, so it scales behind these evolutions without changing contracts:
 
 - Run the API as **stateless replicas behind a load balancer** (JWT/API-key auth means
   no server session state).
@@ -114,7 +99,7 @@ and stateless, so it scales behind these evolutions without changing contracts:
 - The genetics client already uses **timeouts + caching**, so partner latency does not
   block ingestion.
 
-## Deliverables Map
+## Map
 
 - README — this file · **Architecture** — [docs/architecture.md](docs/architecture.md)
 - Backend source — [backend/](backend/) · Frontend — [frontend/](frontend/)

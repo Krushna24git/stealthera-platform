@@ -22,17 +22,26 @@ export default function IngestPage() {
   const update = (key: keyof typeof form, value: string | boolean) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  // A blank field means "not reported" — omit it so an optional vital stays
+  // optional instead of being coerced to 0 and rejected by physiological bounds.
+  const optionalNumber = (value: string): number | undefined => {
+    const trimmed = value.trim();
+    if (trimmed === "") return undefined;
+    const parsed = Number(trimmed);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
+
   const onSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     dispatch(resetIngestion());
     const payload: IngestPayload = {
-      deviceId: form.deviceId,
-      patientId: form.patientId,
+      deviceId: form.deviceId.trim(),
+      patientId: form.patientId.trim(),
       timestamp: new Date().toISOString(),
-      heartRate: Number(form.heartRate),
-      spo2: Number(form.spo2),
-      temperature: Number(form.temperature),
-      steps: Number(form.steps),
+      heartRate: optionalNumber(form.heartRate),
+      spo2: optionalNumber(form.spo2),
+      temperature: optionalNumber(form.temperature),
+      steps: optionalNumber(form.steps),
       fallDetected: form.fallDetected,
     };
     dispatch(submitHealthData({ payload, deviceKey }));

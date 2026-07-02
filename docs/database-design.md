@@ -1,4 +1,4 @@
-# Database Design (Task 7)
+# Database Design 
 
 ## SQL vs NoSQL
 

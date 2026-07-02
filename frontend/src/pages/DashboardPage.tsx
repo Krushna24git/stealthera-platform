@@ -15,7 +15,12 @@ export default function DashboardPage() {
   return (
     <div>
       <div className="card">
-        <h2>Monitored Patients</h2>
+        <h2>
+          Monitored Patients{" "}
+          {listStatus !== "loading" && !listError && (
+            <span className="muted">({list.length})</span>
+          )}
+        </h2>
         {listStatus === "loading" && <p className="muted">Loading...</p>}
         {listError && <p className="error-text">{listError}</p>}
         {listStatus !== "loading" && !listError && (
@@ -42,6 +47,7 @@ export default function DashboardPage() {
               {list.map((row) => (
                 <tr
                   key={row.patientId}
+                  className={row.latestAlert?.severity === "critical" ? "row-critical" : undefined}
                   style={{ cursor: "pointer" }}
                   onClick={() => navigate(`/patients/${row.patientId}`)}
                 >

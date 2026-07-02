@@ -68,7 +68,6 @@ export const env = {
     spo2Low: readNumber("SPO2_LOW_PERCENT", 92),
     temperatureHigh: readNumber("TEMP_HIGH_C", 38),
     temperatureLow: readNumber("TEMP_LOW_C", 35),
-    inactivityStepsMin: readNumber("INACTIVITY_STEPS_MIN", 100),
   },
 
   limits: {

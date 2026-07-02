@@ -8,7 +8,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { status, error, token } = useAppSelector((state) => state.auth);
   const [email, setEmail] = useState("admin@stealthera.health");
-  const [password, setPassword] = useState("StealthEra#2026");
+  const [password, setPassword] = useState("StealthEra");
 
   if (token) {
     navigate("/", { replace: true });
@@ -29,14 +29,28 @@ export default function LoginPage() {
         </p>
         <div className="field">
           <label>Email</label>
-          <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            type="email"
+            required
+          />
         </div>
         <div className="field">
           <label>Password</label>
-          <input value={password} onChange={(e) => setPassword(e.target.value)} type="password" required />
+          <input
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            type="password"
+            required
+          />
         </div>
         {error && <p className="error-text">{error}</p>}
-        <button className="btn" style={{ width: "100%" }} disabled={status === "loading"}>
+        <button
+          className="btn"
+          style={{ width: "100%" }}
+          disabled={status === "loading"}
+        >
           {status === "loading" ? "Signing in..." : "Sign in"}
         </button>
       </form>

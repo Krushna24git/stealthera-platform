@@ -5,14 +5,18 @@ export const userRepo = {
     return User.findOne({ email: email.toLowerCase().trim() });
   },
 
-  async createIfAbsent(input: {
+  async upsertByEmail(input: {
     email: string;
     name: string;
     role: "admin" | "clinician";
     passwordHash: string;
   }): Promise<UserDoc> {
-    const existing = await this.findByEmail(input.email);
-    if (existing) return existing;
-    return User.create(input);
+    const email = input.email.toLowerCase().trim();
+    const user = await User.findOneAndUpdate(
+      { email },
+      { $set: { email, name: input.name, role: input.role, passwordHash: input.passwordHash } },
+      { upsert: true, new: true }
+    );
+    return user as UserDoc;
   },
 };

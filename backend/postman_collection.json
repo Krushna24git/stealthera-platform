@@ -32,7 +32,7 @@
         "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"email\": \"admin@stealthera.health\",\n  \"password\": \"StealthEra#2026\"\n}"
+          "raw": "{\n  \"email\": \"admin@stealthera.health\",\n  \"password\": \"StealthEra\"\n}"
         }
       }
     },

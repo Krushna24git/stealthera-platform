@@ -23,7 +23,7 @@ services:
       GENETICS_API_BASE_URL: http://localhost:4000/api/v1
       CORS_ORIGINS: "*"
       SEED_ADMIN_EMAIL: admin@stealthera.health
-      SEED_ADMIN_PASSWORD: "StealthEra#2026"
+      SEED_ADMIN_PASSWORD: "StealthEra"
     ports:
       - "4000:4000"
 

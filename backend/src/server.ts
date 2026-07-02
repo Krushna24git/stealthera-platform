@@ -12,6 +12,7 @@ async function main(): Promise<void> {
   const server = app.listen(env.port, () => {
     logger.info(`StealthEra RPM API listening on http://localhost:${env.port}`);
     logger.info(`API docs available at http://localhost:${env.port}/docs`);
+    logger.info(`log level: ${env.logLevel} (set LOG_LEVEL=debug for verbose request/ingestion logs)`);
   });
 
   const shutdown = async (signal: string): Promise<void> => {

@@ -42,7 +42,7 @@ async function seed(): Promise<void> {
   ]);
 
   const passwordHash = await bcrypt.hash(env.seed.adminPassword, 10);
-  await userRepo.createIfAbsent({
+  await userRepo.upsertByEmail({
     email: env.seed.adminEmail,
     name: "StealthEra Admin",
     role: "admin",

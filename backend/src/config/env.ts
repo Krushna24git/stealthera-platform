@@ -34,6 +34,7 @@ function readList(key: string): string[] {
 export const env = {
   nodeEnv: readString("NODE_ENV", "development"),
   port: readNumber("PORT", 4000),
+  logLevel: readString("LOG_LEVEL", process.env.NODE_ENV === "production" ? "info" : "debug").toLowerCase(),
 
   mongo: {
     uri: readString("MONGODB_URI", "mongodb://127.0.0.1:27017"),
@@ -49,7 +50,10 @@ export const env = {
   },
 
   genetics: {
-    baseUrl: readString("GENETICS_API_BASE_URL", "http://127.0.0.1:4000/api/v1").replace(/\/$/, ""),
+    baseUrl: readString(
+      "GENETICS_API_BASE_URL",
+      "http://127.0.0.1:4000/api/v1",
+    ).replace(/\/$/, ""),
     timeoutMs: readNumber("GENETICS_API_TIMEOUT_MS", 4000),
     cacheTtlMs: readNumber("GENETICS_CACHE_TTL_MS", 300000),
   },
@@ -76,7 +80,7 @@ export const env = {
 
   seed: {
     adminEmail: readString("SEED_ADMIN_EMAIL", "admin@stealthera.health"),
-    adminPassword: readString("SEED_ADMIN_PASSWORD", "StealthEra#2026"),
+    adminPassword: readString("SEED_ADMIN_PASSWORD", "StealthEra"),
   },
 };
 

@@ -44,7 +44,7 @@ paths:
               $ref: "#/components/schemas/LoginRequest"
             example:
               email: admin@stealthera.health
-              password: "StealthEra#2026"
+              password: "StealthEra"
       responses:
         "200":
           description: Authenticated

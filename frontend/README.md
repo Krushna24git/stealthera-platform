@@ -11,15 +11,15 @@ npm run dev               # http://localhost:5173
 ```
 
 The dev server proxies `/api` to `http://localhost:4000`, so start the backend first.
-Sign in with the seeded admin (`admin@stealthera.health` / `StealthEra#2026`).
+Sign in with the seeded admin (`admin@stealthera.health` / `StealthEra`).
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Vite dev server |
-| `npm run build` | typecheck + production build to `dist/` |
-| `npm run preview` | preview the production build |
+| Command           | Description                             |
+| ----------------- | --------------------------------------- |
+| `npm run dev`     | Vite dev server                         |
+| `npm run build`   | typecheck + production build to `dist/` |
+| `npm run preview` | preview the production build            |
 
 ## State (Redux Toolkit)
 

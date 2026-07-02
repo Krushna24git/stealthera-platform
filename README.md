@@ -29,7 +29,7 @@ docker compose up --build
 docker compose exec backend npm run seed
 ```
 
-- Dashboard → http://localhost:5173  (login `admin@stealthera.health` / `StealthEra#2026`)
+- Dashboard → http://localhost:5173  (login `admin@stealthera.health` / `StealthEra`)
 - API → http://localhost:4000/api/v1
 - API docs → http://localhost:4000/docs
 

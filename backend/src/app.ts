@@ -11,6 +11,15 @@ import apiRouter from "./routes/index.js";
 export function createApp(): Express {
   const app = express();
 
+  app.disable("x-powered-by");
+  app.set("trust proxy", true);
+  app.use((_req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("Referrer-Policy", "no-referrer");
+    next();
+  });
+
   const origins = env.cors.origins.trim();
   app.use(cors(origins === "*" ? {} : { origin: origins.split(",").map((o) => o.trim()) }));
   app.use(express.json({ limit: "256kb" }));

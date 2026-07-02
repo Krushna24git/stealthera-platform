@@ -14,6 +14,26 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+// A 401 on any authenticated call means the session token is missing, invalid
+// or expired — clear it and send the user back to sign-in. Login's own 401
+// (wrong credentials) must stay on the form, so it is excluded.
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (
+      axios.isAxiosError(error) &&
+      error.response?.status === 401 &&
+      !error.config?.url?.includes("/auth/login") &&
+      window.location.pathname !== "/login"
+    ) {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem("stealthera.user");
+      window.location.assign("/login");
+    }
+    return Promise.reject(error);
+  }
+);
+
 export function extractErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
     const payload = error.response?.data as { error?: { message?: string } } | undefined;

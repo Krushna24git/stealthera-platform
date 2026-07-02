@@ -1,5 +1,11 @@
 import type { Request, Response } from "express";
-import { listPatients, getLatestVitals, getHistory, getSummary } from "../services/patient.service.js";
+import {
+  listPatients,
+  getLatestVitals,
+  getHistory,
+  getAlerts,
+  getSummary,
+} from "../services/patient.service.js";
 import { env } from "../config/env.js";
 import { clamp } from "../utils/stats.js";
 import { toInt, toStr, parsePagination, paginate } from "../utils/pagination.js";
@@ -36,6 +42,12 @@ export async function getPatientHistory(req: Request, res: Response): Promise<vo
       order,
     })
   );
+}
+
+export async function getPatientAlerts(req: Request, res: Response): Promise<void> {
+  const limit = clamp(toInt(req.query.limit, env.limits.defaultPageSize), 1, env.limits.maxPageSize);
+  const order: 1 | -1 = toStr(req.query.order)?.toLowerCase() === "asc" ? 1 : -1;
+  res.json(await getAlerts(req.params.id, { limit, order }));
 }
 
 export async function getPatientSummary(req: Request, res: Response): Promise<void> {

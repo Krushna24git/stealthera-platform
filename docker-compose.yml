@@ -17,7 +17,7 @@ services:
       PORT: "4000"
       MONGODB_URI: mongodb://mongo:27017
       MONGODB_DB: stealthera_rpm
-      JWT_SECRET: change-me-in-production
+      JWT_SECRET: 5c1f0e7a9b2d4e6f8a0c3b5d7e9f1a2b4c6d8e0f1a3b5c7d9e2f4a6b8c0d1e3f
       AUTH_ENABLED: "true"
       DEVICE_API_KEYS: st-device-key-local
       GENETICS_API_BASE_URL: http://localhost:4000/api/v1

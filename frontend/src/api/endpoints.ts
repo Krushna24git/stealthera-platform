@@ -1,5 +1,6 @@
 import { apiClient } from "./client.js";
 import type {
+  AlertsResponse,
   AuthUser,
   HistoryResponse,
   IngestionResult,
@@ -25,6 +26,10 @@ export const patientApi = {
   history: (id: string, limit = 200, order: "asc" | "desc" = "asc") =>
     apiClient
       .get<HistoryResponse>(`/patients/${id}/history`, { params: { limit, order } })
+      .then((r) => r.data),
+  alerts: (id: string, limit = 25, order: "asc" | "desc" = "desc") =>
+    apiClient
+      .get<AlertsResponse>(`/patients/${id}/alerts`, { params: { limit, order } })
       .then((r) => r.data),
   profile: (id: string) => apiClient.get<PatientProfile>(`/patient-profile/${id}`).then((r) => r.data),
 };

@@ -75,6 +75,8 @@ paths:
         Validates and stores one physiological packet. Duplicate packets
         (same deviceId + timestamp) are detected and return 200 without
         creating a new record. On a new record, alert rules are evaluated.
+        Timestamps more than 5 minutes in the future are rejected with 422
+        (device clock fault).
       security:
         - deviceApiKey: []
       requestBody:
@@ -181,6 +183,36 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/History"
+        "404":
+          description: No records for patient
+  /patients/{id}/alerts:
+    get:
+      tags: [Patients]
+      summary: Alert history for a patient
+      security:
+        - bearerAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PatientId"
+        - name: limit
+          in: query
+          schema: { type: integer, default: 50, maximum: 500 }
+        - name: order
+          in: query
+          schema: { type: string, enum: [asc, desc], default: desc }
+      responses:
+        "200":
+          description: Alerts page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  patientId: { type: string }
+                  count: { type: integer }
+                  total: { type: integer }
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Alert" }
         "404":
           description: No records for patient
   /patients/{id}/summary:

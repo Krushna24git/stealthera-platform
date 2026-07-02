@@ -75,6 +75,13 @@ export interface HistoryResponse {
   data: Vitals[];
 }
 
+export interface AlertsResponse {
+  patientId: string;
+  count: number;
+  total: number;
+  data: Alert[];
+}
+
 export interface Paged<T> {
   data: T[];
   page: number;

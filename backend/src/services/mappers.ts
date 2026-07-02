@@ -1,5 +1,8 @@
-import type { HealthDataDoc } from "../db/models/HealthData.js";
-import type { AlertDoc } from "../db/models/Alert.js";
+import type { IHealthData } from "../db/models/HealthData.js";
+import type { IAlert } from "../db/models/Alert.js";
+
+// Accepts hydrated documents and lean aggregation rows alike.
+type WithId<T> = T & { _id: unknown };
 
 export interface VitalsDto {
   recordId: string;
@@ -26,7 +29,7 @@ export interface AlertDto {
   timestamp: string;
 }
 
-export function toVitalsDto(doc: HealthDataDoc): VitalsDto {
+export function toVitalsDto(doc: WithId<IHealthData>): VitalsDto {
   return {
     recordId: String(doc._id),
     deviceId: doc.deviceId,
@@ -40,7 +43,7 @@ export function toVitalsDto(doc: HealthDataDoc): VitalsDto {
   };
 }
 
-export function toAlertDto(doc: AlertDoc): AlertDto {
+export function toAlertDto(doc: WithId<IAlert>): AlertDto {
   return {
     id: String(doc._id),
     patientId: doc.patientId,

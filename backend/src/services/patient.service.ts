@@ -32,22 +32,24 @@ export async function listPatients(opts: {
   limit: number;
 }): Promise<{ patients: PatientListRow[]; total: number }> {
   const { patients, total } = await patientRepo.list(opts);
-  const rows = await Promise.all(
-    patients.map(async (patient) => {
-      const [latest, latestAlert] = await Promise.all([
-        healthDataRepo.latestForPatient(patient.patientId),
-        alertRepo.latestForPatient(patient.patientId),
-      ]);
-      return {
-        patientId: patient.patientId,
-        name: patient.name ?? "",
-        sex: patient.sex ?? "unknown",
-        deviceIds: patient.deviceIds ?? [],
-        latest: latest ? toVitalsDto(latest) : null,
-        latestAlert: latestAlert ? toAlertDto(latestAlert) : null,
-      };
-    })
-  );
+  const patientIds = patients.map((patient) => patient.patientId);
+  const [latestByPatient, latestAlertByPatient] = await Promise.all([
+    healthDataRepo.latestForPatients(patientIds),
+    alertRepo.latestForPatients(patientIds),
+  ]);
+
+  const rows = patients.map((patient) => {
+    const latest = latestByPatient.get(patient.patientId);
+    const latestAlert = latestAlertByPatient.get(patient.patientId);
+    return {
+      patientId: patient.patientId,
+      name: patient.name ?? "",
+      sex: patient.sex ?? "unknown",
+      deviceIds: patient.deviceIds ?? [],
+      latest: latest ? toVitalsDto(latest) : null,
+      latestAlert: latestAlert ? toAlertDto(latestAlert) : null,
+    };
+  });
   return { patients: rows, total };
 }
 
@@ -67,6 +69,18 @@ export async function getHistory(
     healthDataRepo.countForPatient(patientId),
   ]);
   return { patientId, count: docs.length, total, data: docs.map(toVitalsDto) };
+}
+
+export async function getAlerts(
+  patientId: string,
+  opts: { limit: number; order: 1 | -1 }
+): Promise<{ patientId: string; count: number; total: number; data: AlertDto[] }> {
+  await assertPatientHasData(patientId);
+  const [alerts, total] = await Promise.all([
+    alertRepo.listForPatient(patientId, opts),
+    alertRepo.countForPatient(patientId),
+  ]);
+  return { patientId, count: alerts.length, total, data: alerts.map(toAlertDto) };
 }
 
 export interface PatientSummary {

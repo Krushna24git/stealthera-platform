@@ -7,7 +7,13 @@ const USER_KEY = "stealthera.user";
 
 function loadUser(): AuthUser | null {
   const raw = localStorage.getItem(USER_KEY);
-  return raw ? (JSON.parse(raw) as AuthUser) : null;
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as AuthUser;
+  } catch {
+    localStorage.removeItem(USER_KEY);
+    return null;
+  }
 }
 
 interface AuthState {

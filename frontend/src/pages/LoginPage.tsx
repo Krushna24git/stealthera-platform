@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../store/hooks.js";
 import { loginThunk } from "../store/slices/authSlice.js";
 
@@ -10,49 +10,57 @@ export default function LoginPage() {
   const [email, setEmail] = useState("admin@stealthera.health");
   const [password, setPassword] = useState("StealthEra");
 
-  if (token) {
-    navigate("/", { replace: true });
-  }
+  // Already authenticated (e.g. deep-linked to /login with a live session).
+  if (token) return <Navigate to="/" replace />;
 
   const onSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const result = await dispatch(loginThunk({ email, password }));
+    const result = await dispatch(loginThunk({ email: email.trim(), password }));
     if (loginThunk.fulfilled.match(result)) navigate("/", { replace: true });
   };
 
   return (
     <div className="login-wrap">
       <form className="login-card" onSubmit={onSubmit}>
-        <h1 style={{ marginTop: 0 }}>StealthEra RPM</h1>
-        <p className="muted" style={{ marginTop: -8 }}>
-          Clinician sign in
-        </p>
+        <div className="login-brand">
+          <span className="brand-mark" aria-hidden="true" />
+          <div>
+            <h1>StealthEra</h1>
+            <p className="muted">Remote patient monitoring</p>
+          </div>
+        </div>
+
         <div className="field">
-          <label>Email</label>
+          <label htmlFor="email">Email</label>
           <input
+            id="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             type="email"
+            autoComplete="username"
             required
           />
         </div>
         <div className="field">
-          <label>Password</label>
+          <label htmlFor="password">Password</label>
           <input
+            id="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             type="password"
+            autoComplete="current-password"
             required
           />
         </div>
-        {error && <p className="error-text">{error}</p>}
-        <button
-          className="btn"
-          style={{ width: "100%" }}
-          disabled={status === "loading"}
-        >
-          {status === "loading" ? "Signing in..." : "Sign in"}
+        {error && (
+          <p className="error-text" role="alert">
+            {error}
+          </p>
+        )}
+        <button className="btn btn-block" disabled={status === "loading"}>
+          {status === "loading" ? "Signing in…" : "Sign in"}
         </button>
+        <p className="muted footnote">Demo credentials are pre-filled for the seeded admin user.</p>
       </form>
     </div>
   );

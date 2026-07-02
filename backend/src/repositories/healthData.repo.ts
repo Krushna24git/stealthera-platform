@@ -1,4 +1,4 @@
-import { HealthData, type HealthDataDoc } from "../db/models/HealthData.js";
+import { HealthData, type HealthDataDoc, type IHealthData } from "../db/models/HealthData.js";
 
 interface HealthDataInput {
   deviceId: string;
@@ -43,6 +43,18 @@ export const healthDataRepo = {
 
   async latestForPatient(patientId: string): Promise<HealthDataDoc | null> {
     return HealthData.findOne({ patientId }).sort({ timestamp: -1 });
+  },
+
+  // Batched variant for list views: one aggregation instead of a query per
+  // patient. Rides the { patientId: 1, timestamp: -1 } index.
+  async latestForPatients(patientIds: string[]): Promise<Map<string, IHealthData & { _id: unknown }>> {
+    if (patientIds.length === 0) return new Map();
+    const rows = await HealthData.aggregate<{ _id: string; doc: IHealthData & { _id: unknown } }>([
+      { $match: { patientId: { $in: patientIds } } },
+      { $sort: { patientId: 1, timestamp: -1 } },
+      { $group: { _id: "$patientId", doc: { $first: "$$ROOT" } } },
+    ]);
+    return new Map(rows.map((row) => [row._id, row.doc]));
   },
 
   async history(

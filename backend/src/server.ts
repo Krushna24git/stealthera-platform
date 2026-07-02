@@ -5,6 +5,10 @@ import { loadOpenApi } from "./docs/openapi.js";
 import { logger } from "./utils/logger.js";
 
 async function main(): Promise<void> {
+  if (env.nodeEnv === "production" && env.auth.jwtSecret === "change-me-in-production") {
+    logger.warn("JWT_SECRET is still the default value; set a strong secret before exposing this API");
+  }
+
   loadOpenApi();
   await connectDatabase();
 
@@ -15,15 +19,27 @@ async function main(): Promise<void> {
     logger.info(`log level: ${env.logLevel} (set LOG_LEVEL=debug for verbose request/ingestion logs)`);
   });
 
-  const shutdown = async (signal: string): Promise<void> => {
-    logger.info(`received ${signal}, shutting down`);
-    server.close(() => undefined);
-    await disconnectDatabase();
-    process.exit(0);
+  let shuttingDown = false;
+  const shutdown = (signal: string): void => {
+    if (shuttingDown) return;
+    shuttingDown = true;
+    logger.info(`received ${signal}, draining connections`);
+
+    // Stop accepting new connections, let in-flight requests finish, then close
+    // the Mongo pool. If draining stalls, force-exit rather than hang the deploy.
+    const forceExit = setTimeout(() => {
+      logger.error("shutdown timed out, forcing exit");
+      process.exit(1);
+    }, 10000);
+    forceExit.unref();
+
+    server.close(() => {
+      void disconnectDatabase().finally(() => process.exit(0));
+    });
   };
 
-  process.on("SIGTERM", () => void shutdown("SIGTERM"));
-  process.on("SIGINT", () => void shutdown("SIGINT"));
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 main().catch((error) => {

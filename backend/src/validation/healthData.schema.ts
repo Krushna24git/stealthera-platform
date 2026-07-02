@@ -1,6 +1,11 @@
 import { z } from "zod";
 import { PHYSIOLOGICAL_BOUNDS } from "../config/vitals.js";
 
+// Device clocks drift; readings dated slightly ahead of server time are fine,
+// but a far-future timestamp is a sensor/clock fault and would corrupt
+// "latest vitals" views forever, so it is rejected like an impossible reading.
+const MAX_CLOCK_SKEW_MS = 5 * 60 * 1000;
+
 function boundedNumber(field: keyof typeof PHYSIOLOGICAL_BOUNDS) {
   const bound = PHYSIOLOGICAL_BOUNDS[field];
   return z
@@ -15,7 +20,10 @@ export const healthDataPayloadSchema = z
     patientId: z.string().trim().min(1, "patientId is required"),
     timestamp: z
       .string()
-      .datetime({ offset: true, message: "timestamp must be an ISO-8601 datetime" }),
+      .datetime({ offset: true, message: "timestamp must be an ISO-8601 datetime" })
+      .refine((value) => new Date(value).getTime() <= Date.now() + MAX_CLOCK_SKEW_MS, {
+        message: "timestamp is in the future beyond allowed clock skew",
+      }),
     heartRate: boundedNumber("heartRate").optional(),
     spo2: boundedNumber("spo2").optional(),
     temperature: boundedNumber("temperature").optional(),

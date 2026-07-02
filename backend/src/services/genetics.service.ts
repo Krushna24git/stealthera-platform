@@ -12,11 +12,14 @@ interface CacheEntry {
   expiresAt: number;
 }
 
+const MAX_CACHE_ENTRIES = 1000;
+
 const cache = new Map<string, CacheEntry>();
 
 export async function fetchGenetics(patientId: string): Promise<GeneticsResult> {
   const cached = cache.get(patientId);
   if (cached && cached.expiresAt > Date.now()) return cached.value;
+  if (cached) cache.delete(patientId);
 
   const url = `${env.genetics.baseUrl}/genetics/${encodeURIComponent(patientId)}`;
 
@@ -44,6 +47,11 @@ export async function fetchGenetics(patientId: string): Promise<GeneticsResult> 
   }
 
   const value: GeneticsResult = { cardiacRisk: body.cardiacRisk, diabetesRisk: body.diabetesRisk };
+  if (cache.size >= MAX_CACHE_ENTRIES) {
+    // Map preserves insertion order, so the first key is the oldest entry.
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
+  }
   cache.set(patientId, { value, expiresAt: Date.now() + env.genetics.cacheTtlMs });
   return value;
 }

@@ -58,6 +58,7 @@ npm run dev         # http://localhost:5173
 | GET | `/api/v1/patients/:id/latest` | Bearer | 3 |
 | GET | `/api/v1/patients/:id/history` | Bearer | 3 |
 | GET | `/api/v1/patients/:id/summary` | Bearer | 3 |
+| GET | `/api/v1/patients/:id/alerts` | Bearer | alert history |
 | GET | `/api/v1/genetics/:patientId` | — | 5 — partner mock |
 | GET | `/api/v1/patient-profile/:id` | Bearer | 5 — merged profile |
 | POST | `/api/v1/auth/login` | — | authentication |
@@ -85,7 +86,9 @@ temperature deviation, and recent critical alerts — then maps to a band
 
 - `health_data` has a **unique index on `(deviceId, timestamp)`**. Ingestion inserts and catches the duplicate-key error; a repeat packet returns **`200 duplicate`** (not `201`) and creates no second row or alert. A device could also send a client-generated `eventId` for the same guarantee — the natural key is used here because `(deviceId, timestamp)` is already unique per reading.
 
-- Validation is two-tier. **Hard physiological bounds** (HR 20–240, SpO₂ 50–100, Temp 30–45) reject impossible readings with **`422`** — they are sensor faults, not emergencies, and must never pollute averages or fire false alarms. Values that are *plausible but dangerous* (e.g. HR 165, SpO₂ 84) pass validation and raise **critical alerts**. The split lives in `config/vitals.ts` (bounds) vs `config/env.ts` (clinical thresholds).
+- Validation is two-tier. **Hard physiological bounds** (HR 20–240, SpO₂ 50–100, Temp 30–45) reject impossible readings with **`422`** — they are sensor faults, not emergencies, and must never pollute averages or fire false alarms. Values that are *plausible but dangerous* (e.g. HR 165, SpO₂ 84) pass validation and raise **critical alerts**. The split lives in `config/vitals.ts` (bounds) vs `config/env.ts` (clinical thresholds). Timestamps more than 5 minutes ahead of server time are treated the same way — a device clock fault, rejected with `422` so a future-dated packet can never pin the "latest vitals" view.
+
+- Operational hardening: device keys are compared **timing-safe**, responses carry standard security headers, 5xx bodies never leak internals outside development, and `SIGTERM` drains in-flight requests before closing the Mongo pool (with a 10s force-exit guard). The patient list resolves latest vitals/alerts with **two batched aggregations** instead of two queries per patient.
 
 - The API is versioned and stateless, so it scales behind these evolutions without changing contracts:
 

@@ -1,8 +1,5 @@
 # StealthEra — Remote Patient Monitoring Platform
 
-A simplified cloud-native RPM backend + dashboard. Wearable devices push physiological
-signals; the backend validates, stores, alerts, and merges them with an external
-genetic-risk partner. A React/Redux dashboard visualises everything.
 
 - **Backend** — Node.js, Express, TypeScript, MongoDB (Mongoose), Zod validation, JWT + device API-key auth, OpenAPI/Swagger.
 - **Frontend** — React, Vite, TypeScript, Redux Toolkit.
